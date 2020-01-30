@@ -1,8 +1,13 @@
 package com.jiwon.auth.membership.controller;
 
+import com.jiwon.auth.jwt.JwtService;
+import com.jiwon.auth.jwt.utils.Auth;
+import com.jiwon.auth.membership.dto.GoogleForm;
 import com.jiwon.auth.membership.dto.JoinForm;
 import com.jiwon.auth.membership.dto.LoginForm;
 import com.jiwon.auth.membership.entity.User;
+import com.jiwon.auth.membership.model.UserResponse;
+import com.jiwon.auth.membership.service.GoogleService;
 import com.jiwon.auth.membership.service.UserService;
 import com.jiwon.auth.response.DefaultRes;
 import com.jiwon.auth.response.ResponseMessage;
@@ -11,10 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -22,7 +24,50 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     @Autowired
+    JwtService jwtService;
+
+    @Autowired
     UserService userService;
+
+    @Autowired
+    GoogleService googleService;
+
+    @Auth
+    @PostMapping("/logoff")
+    public ResponseEntity logoffUser(@RequestHeader("Authorization") final String token) {
+        try {
+            userService.logoffUser(token);
+            return new ResponseEntity(DefaultRes.res(StatusCode.OK, ResponseMessage.SUCCESSFUL_LOGOFF), HttpStatus.OK);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return new ResponseEntity(DefaultRes.FAIL_DEFAULT_RES, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity loginByGoogle(@RequestBody GoogleForm googleForm) {
+        String response = googleService.getGoogleToken(googleForm.getCode());
+        return new ResponseEntity(DefaultRes.res(StatusCode.OK, ResponseMessage.GOOGLE_LOGIN, response), HttpStatus.OK);
+    }
+
+    @GetMapping("/google")
+    public ResponseEntity getUserByGoogle(@RequestHeader("Authorization") final String token) {
+        String response = googleService.getGoogleUserInfo(token);
+        return new ResponseEntity(DefaultRes.res(StatusCode.OK, ResponseMessage.READ_USER, response), HttpStatus.OK);
+    }
+
+    @PostMapping("/google/logoff")
+    public ResponseEntity logoffGoogleUser(@RequestHeader("Authorization") final String token) {
+        googleService.logoff(token);
+        return new ResponseEntity(DefaultRes.res(StatusCode.OK, ResponseMessage.SUCCESSFUL_LOGOFF), HttpStatus.OK);
+    }
+
+    @Auth
+    @GetMapping("/service")
+    public ResponseEntity usingService(@RequestHeader("Authorization") final String token) {
+        UserResponse user = userService.decodeTokenToUser(token);
+        return new ResponseEntity(DefaultRes.res(StatusCode.OK, ResponseMessage.READ_USER, user), HttpStatus.OK);
+    }
 
     @PostMapping("/join")
     public ResponseEntity joinUser(@RequestBody JoinForm joinForm) {
@@ -49,7 +94,9 @@ public class UserController {
         if (user == null) // password 입력 오류
             return new ResponseEntity(DefaultRes.res(StatusCode.OK, ResponseMessage.INVALID_INFO), HttpStatus.OK);
 
-        return new ResponseEntity(DefaultRes.res(StatusCode.OK, ResponseMessage.READ_USER, user), HttpStatus.OK);
+        // 토큰 발급
+        JwtService.TokenRes token = userService.issueToken(user.getNum());
+        return new ResponseEntity(DefaultRes.res(StatusCode.OK, ResponseMessage.READ_USER, token), HttpStatus.OK);
     }
 
 

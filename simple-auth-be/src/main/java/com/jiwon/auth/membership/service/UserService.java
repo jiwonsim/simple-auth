@@ -1,7 +1,11 @@
 package com.jiwon.auth.membership.service;
 
+import com.jiwon.auth.jwt.JwtService;
 import com.jiwon.auth.membership.dto.LoginForm;
+import com.jiwon.auth.membership.entity.ValidToken;
 import com.jiwon.auth.membership.entity.User;
+import com.jiwon.auth.membership.model.UserResponse;
+import com.jiwon.auth.membership.repository.TokenRepository;
 import com.jiwon.auth.membership.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,15 +26,43 @@ public class UserService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    TokenRepository tokenRepository;
+
+    @Autowired
+    JwtService jwtService;
+
     public List<User> getAllUserList() {
         List<User> userList = userRepository.findAll();
         return userList;
     }
 
-//    public User getUser(Long id) {
-//        User user = userRepository.findById(id).orElseThrow(() -> new NoSuchElementException(ExceptionMessage.INVALID_USER_DATA));
-//        return user;
-//    }
+    public User getUser(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new NoSuchElementException("INVALID_USER_DATA"));
+        return user;
+    }
+
+    public JwtService.TokenRes issueToken(long num) {
+        JwtService.TokenRes tokenRes = new JwtService.TokenRes(jwtService.create(num));
+        ValidToken issuedValidToken = new ValidToken(tokenRes.getToken());
+        tokenRepository.save(issuedValidToken);
+
+        return tokenRes;
+    }
+
+    public UserResponse decodeTokenToUser(String token) {
+        JwtService.Token decodedToken = jwtService.decode(token);
+        Long num = decodedToken.getNum();
+
+        User user = getUser(num);
+        UserResponse response = new UserResponse(user.getUid(), user.getName());
+        return response;
+    }
+
+    public void logoffUser(String inputToken) {
+        ValidToken validToken = tokenRepository.findById(inputToken).orElseThrow(() -> new NoSuchElementException("INVALID_TOKEN_DATA"));
+        tokenRepository.delete(validToken);
+    }
 
     public User getUserByUid(String uid) {
         User user = userRepository.findAllByUid(uid);

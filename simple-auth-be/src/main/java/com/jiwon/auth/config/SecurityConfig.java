@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.CorsUtils;
@@ -24,11 +25,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .antMatcher("/**").authorizeRequests()
             .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // - (1)
-            .antMatchers("/", "/test/**", "/login/**", "/webjars/**", "/error**", "/join/**").permitAll()
+            .antMatchers("/", "/**", "/login/**", "/webjars/**", "/error**", "/join/**").permitAll()
             .anyRequest().authenticated()
             .and()
             .cors();
+
+        http.logout()
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessUrl("/")
+                .invalidateHttpSession(true);
+
     }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

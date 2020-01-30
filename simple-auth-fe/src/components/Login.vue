@@ -22,6 +22,15 @@
       <router-link to="/join">
         <button>Join</button>
       </router-link>
+
+      <ul>
+        <li>
+          <a :href=google_url>
+            Google 로그인
+          </a>
+        </li>
+      </ul>
+      
     </form>
 
     <h3>{{response_msg}}</h3>
@@ -31,7 +40,7 @@
 </template>
 
 <script>
-import {auth} from '../api'
+import {auth, setAuthInHeader} from '../api'
 
 export default {
   name: 'HelloWorld',
@@ -39,30 +48,75 @@ export default {
     return {
       user_id: "",
       user_pwd: "",
-      response_msg: ""
+      response_msg: "",
+      token: "", 
+      CLIENT_ID: '5626016189-14nstjk146gm5o3cabmv5duiceuq95qb.apps.googleusercontent.com', 
+      REDIRECT_URI: 'http://localhost:8627/home',
+      SCOPE: 'https://www.googleapis.com/auth/userinfo.email',
+      ACCESS_TYPE: 'offline',
+      INCLUD_GRANTED_SCOPES: 'true',
+      STATE: 'state_parameter_passthrough_value',
+      RESPONSE_TYPE: 'code',
+      google_url: 'https://accounts.google.com/o/oauth2/v2/auth'
     }
+  }, 
+  /*
+Https://accounts.google.com/o/oauth2/v2/auth? 
+scope=https://www.googleapis.com/auth/userinfo.email&
+access_type=offline&
+Include-granted_scopes=true&
+state=state_parameter_passthrough_value&
+redirect_uri=http://localhost:8627/callback&
+response_type=code&
+client_id=5626016189-14nstjk146gm5o3cabmv5duiceuq95qb.apps.googleusercontent.com
+*/
+/*
+https://accounts.google.com/o/oauth2/v2/auth
+?scope=https://www.googleapis.com/auth/userinfo.email
+&access_type=offline
+*/
+  created () {
+    this.google_url += '?scope=' + this.SCOPE
+    this.google_url += '&Include-granted_scopes=' + this.INCLUD_GRANTED_SCOPES
+    this.google_url += '&access_type=' + this.ACCESS_TYPE
+    this.google_url += '&state=' + this.STATE
+    this.google_url += '&redirect_uri=' + this.REDIRECT_URI
+    this.google_url += '&response_type=' + this.RESPONSE_TYPE
+    this.google_url += '&client_id=' + this.CLIENT_ID
   }, 
 
   methods : {
     submitted() {
-        auth.login(this.user_id, this.user_pwd)
-        .then(data => {
-          if (data.responseData === null) {
-            console.log("??")
-            this.response_msg = data.responseMessage
-          }
-          else {
-            console.log("얍")
-            this.$router.push({
-              path: 'home',
-              query: {
-                name: data.responseData.name,
-                uid: data.responseData.uid
-              }
-            })
-          }
-        })
-    }
+      auth.login(this.user_id, this.user_pwd)
+      .then(data => {
+        if (data.responseData === null) {
+          this.response_msg = data.responseMessage
+        }
+        else {
+          localStorage.setItem('token', data.responseData.token)
+          setAuthInHeader(data.responseData.token)
+          
+          this.$router.push({
+            path: 'home'
+          })
+        }
+      })
+    }, 
+
+
+    // google_login() {
+    //   console.log("냨")
+    //   this.$gAuth.getAuthCode()
+    //   .then(authCode => {
+    //     console.log("authCode : " + authCode)
+    //   })
+    //   .then(response => {
+    //     console.log("response : " + response)
+    //   })
+    //   .catch(error => {
+    //     console.log("error : " + error)
+    //   })
+    // }
   }
 }
 </script>
