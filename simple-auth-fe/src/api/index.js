@@ -2,6 +2,7 @@ import axios from 'axios'
 import router from '../router'
 
 const DOMAIN = 'http://15.164.141.101:8486'
+// const DOMAIN = 'http://localhost:8486'
 
 const request = (method, url, data) => {
   return axios({

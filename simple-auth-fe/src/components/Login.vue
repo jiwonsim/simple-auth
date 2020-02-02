@@ -46,12 +46,17 @@ export default {
   name: 'HelloWorld',
   data () {
     return {
-      user_id: "",
-      user_pwd: "",
-      response_msg: "",
-      token: "", 
+      user_id: '',
+      user_pwd: '',
+      response_msg: '',
+      token: '', 
+
+      is_local_storage: false, 
+      existing_local_storage: '', 
+
       CLIENT_ID: '5626016189-14nstjk146gm5o3cabmv5duiceuq95qb.apps.googleusercontent.com', 
-      REDIRECT_URI: 'http://localhost:8627/home',
+      REDIRECT_URI: 'http://www.jiwonxdoori.tk/home',
+      // REDIRECT_URI: 'http://localhost:8627/home',
       SCOPE: 'https://www.googleapis.com/auth/userinfo.email',
       ACCESS_TYPE: 'offline',
       INCLUD_GRANTED_SCOPES: 'true',
@@ -59,23 +64,16 @@ export default {
       RESPONSE_TYPE: 'code',
       google_url: 'https://accounts.google.com/o/oauth2/v2/auth'
     }
-  }, 
-  /*
-Https://accounts.google.com/o/oauth2/v2/auth? 
-scope=https://www.googleapis.com/auth/userinfo.email&
-access_type=offline&
-Include-granted_scopes=true&
-state=state_parameter_passthrough_value&
-redirect_uri=http://localhost:8627/callback&
-response_type=code&
-client_id=5626016189-14nstjk146gm5o3cabmv5duiceuq95qb.apps.googleusercontent.com
-*/
-/*
-https://accounts.google.com/o/oauth2/v2/auth
-?scope=https://www.googleapis.com/auth/userinfo.email
-&access_type=offline
-*/
+  },
+
   created () {
+    this.existing_local_storage = localStorage.getItem('token')
+    console.log('token : ' + this.existing_local_storage);
+
+    if (this.existing_local_storage !== null) { // localStorage에 token이 있는 경우
+      this.keep_login()
+    }
+
     this.google_url += '?scope=' + this.SCOPE
     this.google_url += '&Include-granted_scopes=' + this.INCLUD_GRANTED_SCOPES
     this.google_url += '&access_type=' + this.ACCESS_TYPE
@@ -102,6 +100,12 @@ https://accounts.google.com/o/oauth2/v2/auth
         }
       })
     }, 
+
+    keep_login() {
+      this.$router.push({
+        path: 'home'
+      })
+    }
 
 
     // google_login() {

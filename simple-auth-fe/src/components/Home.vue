@@ -71,24 +71,6 @@ export default {
 
   methods: {
     logout() {
-      // 로그아웃 API 호출
-      // 계정 로그아웃과 소셜 로그아웃을 나누어야 한다. 
-      // 왜냐하면 계정 로그아웃은 쥐고 있는 토큰이 유효한지 검사하는 과정을 거치는데
-      // 소셜 로그아웃은 db에서 토큰만 삭제하기 때문 
-
-      if (this.is_social_account) {
-        social_auth.logoff()
-        .then(data => {
-          if (data.statusCode === 200) {
-            delete localStorage.token
-            setAuthInHeader(null)
-
-            this.$router.push('/')
-          }
-        })
-      }
-      else {
-        // 계정 로그아웃은 header에 갖고 있는 token으로 통신 => 없으면 오류
         auth.logoff()
         .then(data => {
           if (data.statusCode === 200) {
@@ -103,7 +85,6 @@ export default {
             this.is_error_of_account = true
           }
         })
-      }
     },
 
     issue_social_token() {
