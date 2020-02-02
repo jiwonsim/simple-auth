@@ -32,7 +32,7 @@ public class UserController {
     @Autowired
     GoogleService googleService;
 
-    @Auth
+//    @Auth
     @PostMapping("/logoff")
     public ResponseEntity logoffUser(@RequestHeader("Authorization") final String token) {
         try {
@@ -56,16 +56,11 @@ public class UserController {
         return new ResponseEntity(DefaultRes.res(StatusCode.OK, ResponseMessage.READ_USER, response), HttpStatus.OK);
     }
 
-    @PostMapping("/google/logoff")
-    public ResponseEntity logoffGoogleUser(@RequestHeader("Authorization") final String token) {
-        googleService.logoff(token);
-        return new ResponseEntity(DefaultRes.res(StatusCode.OK, ResponseMessage.SUCCESSFUL_LOGOFF), HttpStatus.OK);
-    }
-
-    @Auth
     @GetMapping("/service")
     public ResponseEntity usingService(@RequestHeader("Authorization") final String token) {
+
         UserResponse user = userService.decodeTokenToUser(token);
+
         return new ResponseEntity(DefaultRes.res(StatusCode.OK, ResponseMessage.READ_USER, user), HttpStatus.OK);
     }
 
@@ -98,7 +93,6 @@ public class UserController {
         JwtService.TokenRes token = userService.issueToken(user.getNum());
         return new ResponseEntity(DefaultRes.res(StatusCode.OK, ResponseMessage.READ_USER, token), HttpStatus.OK);
     }
-
 
     public boolean hasUserId(String uid) {
         User user = userService.getUserByUid(uid);

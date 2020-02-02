@@ -30,6 +30,9 @@ public class UserService {
     TokenRepository tokenRepository;
 
     @Autowired
+    GoogleService googleService;
+
+    @Autowired
     JwtService jwtService;
 
     public List<User> getAllUserList() {
@@ -52,6 +55,10 @@ public class UserService {
 
     public UserResponse decodeTokenToUser(String token) {
         JwtService.Token decodedToken = jwtService.decode(token);
+        if (decodedToken == null) { // google
+            String googleEmail = googleService.getGoogleUserInfo(token);
+            return new UserResponse("구글계정", googleEmail);
+        }
         Long num = decodedToken.getNum();
 
         User user = getUser(num);

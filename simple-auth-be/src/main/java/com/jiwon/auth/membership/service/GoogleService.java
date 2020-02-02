@@ -29,7 +29,8 @@ public class GoogleService {
     @Value("${GOOGLE.CLIENTSECRET}")
     private String SECRETKEY;
 
-    private String redirectUri = "http://localhost:8627/home";
+    private String redirectUri = "http://www.jiwonxdoori.tk/home";
+//  private String redirectUri = "http://localhost:8627/home";
 
     public RestTemplate restTemplate = new RestTemplate();
 

@@ -7,7 +7,9 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.jiwon.auth.membership.service.GoogleService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -41,8 +43,10 @@ public class JwtService {
             final JWTVerifier jwtVerifier = require(Algorithm.HMAC256(SECRET)).withIssuer(ISSUER).build();
             DecodedJWT decodedJWT = jwtVerifier.verify(token);
             return new Token(decodedJWT.getClaim("num").asLong());
+
         } catch (JWTVerificationException jve) {
-            log.error(jve.getMessage());
+            // Google Token
+            return null;
         } catch (Exception e) {
             log.error(e.getMessage());
         }
